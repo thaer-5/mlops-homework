@@ -33,10 +33,37 @@ jobs:
         run: docker build -t mlops-app .
 
       - name: Run Docker container
-        run: docker run -d -p 5000:5000 mlops-app
+        run: docker run -d --name mlops-container -p 5000:5000 mlops-app
 
-      - name: Wait for service to be ready
-        run: sleep 10
+      - name: Show container logs (debug)
+        run: docker logs mlops-container || true
+
+      - name: Wait for service to be ready (retry)
+        run: |
+          python - <<'PY'
+          import time
+          import requests
+
+          url = "http://localhost:5000/predict"
+          payload = {"text": "hello"}
+
+          for i in range(30):
+              try:
+                  r = requests.post(url, json=payload, timeout=2)
+                  print("Status:", r.status_code, "Body:", r.text)
+                  if r.status_code == 200:
+                      print("Service is ready ✅")
+                      raise SystemExit(0)
+              except Exception as e:
+                  print(f"Try {i+1}/30: not ready yet -> {e}")
+                  time.sleep(1)
+
+          raise SystemExit("Service never became ready ❌")
+          PY
 
       - name: Smoke test
         run: python smoke_test.py
+
+      - name: Show container logs if failure
+        if: failure()
+        run: docker logs mlops-container
