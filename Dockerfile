@@ -2,11 +2,15 @@ FROM python:3.10-slim
 
 WORKDIR /app
 
+# Install dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY app app
+# Copy application code
+COPY app ./app
 
+# Expose Flask port
 EXPOSE 5000
 
-CMD ["python", "app/main.py"]
+# Run Flask app
+CMD ["python", "-m", "app.main"]
