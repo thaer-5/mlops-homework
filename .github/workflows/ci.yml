@@ -21,7 +21,8 @@ jobs:
 
     - name: Run unit and component tests
       run: |
-        PYTHONPATH=. pytest tests/
+        export PYTHONPATH=$GITHUB_WORKSPACE
+    	pytest tests/
 
     - name: Run linting
       run: |
