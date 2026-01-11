@@ -1,41 +1,45 @@
 name: MLOps CI Pipeline
 
-on: [push]
+on:
+  push:
 
 jobs:
   build-test-deploy:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.10'
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
 
-    - name: Install dependencies
-      run: |
-        pip install -r requirements.txt
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
 
-    - name: Run unit and component tests
-      run: |
-        export PYTHONPATH=$GITHUB_WORKSPACE
-    	pytest tests/
+      - name: Run unit and component tests
+        run: |
+          pytest tests/
 
-    - name: Run linting
-      run: |
-        flake8 app/
+      - name: Run linting
+        run: |
+          flake8 app/
 
-    - name: Build Docker image
-      run: |
-        docker build -t mlops-app .
+      - name: Build Docker image
+        run: |
+          docker build -t mlops-app .
 
-    - name: Run Docker container
-      run: |
-        docker run -d -p 5000:5000 mlops-app
+      - name: Run Docker container
+        run: |
+          docker run -d -p 5000:5000 --name mlops-app-container mlops-app
 
-    - name: Smoke test
-      run: |
-        python smoke_test.py
+      - name: Wait for service
+        run: |
+          sleep 5
+
+      - name: Smoke test
+        run: |
+          python smoke_test.py
