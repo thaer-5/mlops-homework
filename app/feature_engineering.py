@@ -1,5 +1,6 @@
 import hashlib
 
+
 def hash_feature(value: str, num_buckets: int = 100) -> int:
     """
     Convert a string into a hashed bucket index.
